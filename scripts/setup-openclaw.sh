@@ -21,9 +21,9 @@ warn() { echo -e “${YELLOW}[setup]${NC} $*”; }
 die()  { echo -e “${RED}[setup] ERROR:${NC} $*” >&2; exit 1; }
 
 # ── 0. Checks ─────────────────────────────────────────────────────────────────
-[[ $EUID -eq 0 ]] || die “Run this script as root (sudo bash $0)”
-[[ -f “${PROXY_SRC}” ]] || die “Proxy script not found at ${PROXY_SRC}”
-[[ -f “${INSTALL_DIR}/build/bin/llama-server” ]] || die “llama-server not found at ${INSTALL_DIR}/build/bin/llama-server”
+[[ $EUID -eq 0 ]] || die "Run this script as root (sudo bash $0)"
+[[ -f "${PROXY_SRC}" ]] || die "Proxy script not found at ${PROXY_SRC}"
+[[ -f "${INSTALL_DIR}/build/bin/llama-server" ]] || die "llama-server not found at ${INSTALL_DIR}/build/bin/llama-server"
 
 # ── 1. Copy proxy script ──────────────────────────────────────────────────────
 info “Installing proxy to ${INSTALL_DIR}/llama-proxy.py…"
