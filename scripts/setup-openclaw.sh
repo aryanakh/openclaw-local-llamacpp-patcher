@@ -15,10 +15,10 @@ SYSTEMD_DIR="/etc/systemd/system"
 PROXY_USER="${SUDO_USER:-$(logname 2>/dev/null || echo nobody)}"
 PYTHON_BIN="$(su - "${PROXY_USER}" -c ‘which python3’ 2>/dev/null || which python3)"
 
-RED=’\033[0;31m’; GREEN=’\033[0;32m’; YELLOW=’\033[1;33m’; NC=’\033[0m’
-info() { echo -e “${GREEN}[setup]${NC} $*”; }
-warn() { echo -e “${YELLOW}[setup]${NC} $*”; }
-die()  { echo -e “${RED}[setup] ERROR:${NC} $*” >&2; exit 1; }
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+info() { echo -e "${GREEN}[setup]${NC} $*"; }
+warn() { echo -e "${YELLOW}[setup]${NC} $*"; }
+die()  { echo -e "${RED}[setup] ERROR:${NC} $*" >&2; exit 1; }
 
 # ── 0. Checks ─────────────────────────────────────────────────────────────────
 [[ $EUID -eq 0 ]] || die "Run this script as root (sudo bash $0)"
@@ -27,12 +27,12 @@ die()  { echo -e “${RED}[setup] ERROR:${NC} $*” >&2; exit 1; }
 
 # ── 1. Copy proxy script ──────────────────────────────────────────────────────
 info “Installing proxy to ${INSTALL_DIR}/llama-proxy.py…"
-cp "${PROXY_SRC}” “${INSTALL_DIR}/llama-proxy.py"
-chmod 755 “${INSTALL_DIR}/llama-proxy.py"
+cp "${PROXY_SRC}" "${INSTALL_DIR}/llama-proxy.py"
+chmod 755 "${INSTALL_DIR}/llama-proxy.py"
 
 # ── 2. Patch BACKEND_URL in the proxy script to match llama-qwen port (8080) ──
 info "Patching proxy backend port to 8080…"
-sed -i ‘s|BACKEND_URL = "http://127.0.0.1:8001"|BACKEND_URL = "http://127.0.0.1:8080"|’   
+sed -i 's|BACKEND_URL = "http://127.0.0.1:8001"|BACKEND_URL = "http://127.0.0.1:8080"|'
 "${INSTALL_DIR}/llama-proxy.py"
 
 # ── 3. Write llama-proxy systemd unit ────────────────────────────────────────
