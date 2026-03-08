@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
-
 # setup-openclaw.sh — Install llama-proxy + systemd services
-
 # 
-
 # Run as root:  sudo bash scripts/setup-openclaw.sh
-
 # Requires:    llama.cpp already installed (llama-qwen.service already running)
-
 set -euo pipefail
 
 SCRIPT_DIR=”$(cd “$(dirname “${BASH_SOURCE[0]}”)” && pwd)”
