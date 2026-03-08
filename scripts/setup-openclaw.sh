@@ -12,7 +12,6 @@ PROXY_SRC="${REPO_DIR}/proxy/llama-proxy.py"
 SYSTEMD_DIR="/etc/systemd/system"
 
 # Detect the user who invoked sudo (so we run the proxy as that user, not root)
-
 PROXY_USER="${SUDO_USER:-$(logname 2>/dev/null || echo nobody)}"
 PYTHON_BIN="$(su - "${PROXY_USER}" -c ‘which python3’ 2>/dev/null || which python3)"
 
@@ -22,25 +21,21 @@ warn() { echo -e “${YELLOW}[setup]${NC} $*”; }
 die()  { echo -e “${RED}[setup] ERROR:${NC} $*” >&2; exit 1; }
 
 # ── 0. Checks ─────────────────────────────────────────────────────────────────
-
 [[ $EUID -eq 0 ]] || die “Run this script as root (sudo bash $0)”
 [[ -f “${PROXY_SRC}” ]] || die “Proxy script not found at ${PROXY_SRC}”
 [[ -f “${INSTALL_DIR}/build/bin/llama-server” ]] || die “llama-server not found at ${INSTALL_DIR}/build/bin/llama-server”
 
 # ── 1. Copy proxy script ──────────────────────────────────────────────────────
-
 info “Installing proxy to ${INSTALL_DIR}/llama-proxy.py…"
 cp "${PROXY_SRC}” “${INSTALL_DIR}/llama-proxy.py"
 chmod 755 “${INSTALL_DIR}/llama-proxy.py"
 
 # ── 2. Patch BACKEND_URL in the proxy script to match llama-qwen port (8080) ──
-
 info "Patching proxy backend port to 8080…"
 sed -i ‘s|BACKEND_URL = "http://127.0.0.1:8001"|BACKEND_URL = "http://127.0.0.1:8080"|’   
 "${INSTALL_DIR}/llama-proxy.py"
 
 # ── 3. Write llama-proxy systemd unit ────────────────────────────────────────
-
 info "Writing systemd unit: llama-proxy.service (port 8000 → 8080)…"
 cat > "${SYSTEMD_DIR}/llama-proxy.service" << EOF
 [Unit]
@@ -62,13 +57,11 @@ WantedBy=multi-user.target
 EOF
 
 # ── 4. Enable + start ─────────────────────────────────────────────────────────
-
 info "Enabling and starting llama-proxy…"
 systemctl daemon-reload
 systemctl enable llama-proxy
 
 # Make sure llama-qwen is already running
-
 info "Checking llama-qwen is running…"
 systemctl is-active –quiet llama-qwen || die "llama-qwen.service is not running — start it first with: sudo systemctl start llama-qwen"
 
@@ -76,7 +69,6 @@ systemctl start llama-proxy
 sleep 2
 
 # ── 5. Verify ─────────────────────────────────────────────────────────────────
-
 info "Verifying proxy health check…"
 HEALTH=$(curl -sf http://127.0.0.1:8000/health 2>/dev/null || echo "FAILED")
 if echo "${HEALTH}" | grep -q ok; then
