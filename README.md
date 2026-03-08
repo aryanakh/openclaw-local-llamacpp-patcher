@@ -1,25 +1,9 @@
-# llama.cpp + openclaw on NVIDIA DGX Spark (GB10)
-
-Run **Qwen3.5-35B-A3B** locally on the DGX Spark and use it inside **openclaw** as a fully functional AI agent — including tool calls and on-demand reasoning mode.
-
-## Hardware
-
-Tested on **NVIDIA DGX Spark** (GB10 Superchip, sm_121, ~122 GB unified memory).  
-The Qwen3.5-35B-A3B MoE model uses ~20 GB, leaving ~100 GB free for context and other workloads.
-
-| Metric | Value |
-|--------|-------|
-| Generation speed | ~43 tok/s |
-| Prefill speed | ~63 tok/s |
-| Context window | 128k tokens |
-
----
+# Lightweight Python Patch Script for local llama.cpp + openclaw 
 
 ## What this repo provides
 
 | File | Purpose |
 |------|---------|
-| `scripts/install.sh` | Builds llama.cpp from source with CUDA (sm_121) and downloads the model |
 | `scripts/setup-openclaw.sh` | Installs the proxy and systemd units |
 | `proxy/llama-proxy.py` | Proxy that makes llama-server compatible with openclaw |
 | `systemd/llama-server.service` | systemd unit for llama-server (port 8001) |
@@ -31,67 +15,13 @@ The Qwen3.5-35B-A3B MoE model uses ~20 GB, leaving ~100 GB free for context and 
 ## Quick start
 
 ```bash
-# 1. Build llama.cpp and download model
-sudo bash scripts/install.sh
-
-# 2. Install proxy + systemd services
+# 1. Install proxy + systemd services
 sudo bash scripts/setup-openclaw.sh
 
-# 3. Add the provider to openclaw (see Section 3 below)
+# 2. Add the provider to openclaw (see Section 3 below)
 ```
 
 ---
-
-## Section 1 — Install llama.cpp and the Qwen model
-
-See [`scripts/install.sh`](scripts/install.sh) for the full automated script, or follow the steps below manually.
-
-### Prerequisites
-
-```bash
-sudo apt-get install -y git cmake build-essential patchelf
-# CUDA toolkit must already be installed (comes with DGX Spark OS image)
-```
-
-### Build llama.cpp
-
-```bash
-git clone https://github.com/ggerganov/llama.cpp /opt/llama.cpp
-cd /opt/llama.cpp
-
-cmake -B build \
-  -DGGML_CUDA=ON \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CUDA_ARCHITECTURES=120
-cmake --build build --config Release -j $(nproc)
-
-# Make binary available system-wide
-ln -sf /opt/llama.cpp/build/bin/llama-server /usr/local/bin/llama-server
-
-# Register shared libs
-echo "/opt/llama.cpp/build/bin" > /etc/ld.so.conf.d/llama.conf
-ldconfig
-```
-
-> **Note on CUDA arch:** GB10 is `sm_121`. The build uses `120` (the closest supported
-> target in current llama.cpp). Do not use `native` — cmake may fail to detect sm_121.
-
-### Download the model
-
-```bash
-mkdir -p /opt/llama.cpp/models
-pip install huggingface_hub
-
-huggingface-cli download \
-  unsloth/Qwen3.5-35B-A3B-GGUF \
-  --include "Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf" \
-  --local-dir /opt/llama.cpp/models/
-```
-
-**Why this model?**
-- `UD` = Unsloth Dynamic quantisation — smarter bit allocation than standard Q4_K_XL
-- Only ~20 GB vs ~37 GB for the original full-size quant
-- ~43 tok/s on GB10 vs ~21 tok/s for the larger quant
 
 ### Start llama-server
 
@@ -101,7 +31,7 @@ llama-server \
   --ctx-size 131072 \
   --parallel 1 \
   --host 127.0.0.1 \
-  --port 8001 \
+  --port 8080 \
   -ngl 99 \
   -fa on
 ```
@@ -119,7 +49,7 @@ Key flags:
 Verify it started:
 
 ```bash
-curl http://127.0.0.1:8001/health
+curl http://127.0.0.1:8080/health
 # {"status":"ok"}
 ```
 
