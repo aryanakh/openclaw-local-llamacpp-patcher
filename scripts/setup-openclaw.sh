@@ -26,7 +26,7 @@ die()  { echo -e "${RED}[setup] ERROR:${NC} $*" >&2; exit 1; }
 [[ -f "${INSTALL_DIR}/build/bin/llama-server" ]] || die "llama-server not found at ${INSTALL_DIR}/build/bin/llama-server"
 
 # ── 1. Copy proxy script ──────────────────────────────────────────────────────
-info “Installing proxy to ${INSTALL_DIR}/llama-proxy.py…"
+info "Installing proxy to ${INSTALL_DIR}/llama-proxy.py…"
 cp "${PROXY_SRC}" "${INSTALL_DIR}/llama-proxy.py"
 chmod 755 "${INSTALL_DIR}/llama-proxy.py"
 
